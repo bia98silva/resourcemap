@@ -1,0 +1,212 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dashboard - ResourceMap</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{layout/main :: layout(~{::main})}">
+    <main>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-chart-bar me-2"></i>Dashboard
+                        </h1>
+                        <p class="page-subtitle">Visão geral das atividades de ajuda humanitária</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stats-card border-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-icon bg-primary">
+                                    <i class="fas fa-heart text-white"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h3 class="stats-number mb-0" th:text="${stats?.activeNeeds ?: 0}">0</h3>
+                                    <p class="stats-label mb-0">Necessidades Ativas</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stats-card border-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-icon bg-success">
+                                    <i class="fas fa-gift text-white"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h3 class="stats-number mb-0" th:text="${stats?.availableDonations ?: 0}">0</h3>
+                                    <p class="stats-label mb-0">Doações Disponíveis</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stats-card border-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-icon bg-warning">
+                                    <i class="fas fa-handshake text-white"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h3 class="stats-number mb-0" th:text="${stats?.pendingMatches ?: 0}">0</h3>
+                                    <p class="stats-label mb-0">Correspondências Pendentes</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stats-card border-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-icon bg-info">
+                                    <i class="fas fa-users text-white"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h3 class="stats-number mb-0" th:text="${stats?.totalUsers ?: 0}">0</h3>
+                                    <p class="stats-label mb-0">Total de Usuários</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts and Tables Row -->
+            <div class="row g-4">
+                <!-- Urgent Needs -->
+                <div class="col-lg-8">
+                    <div class="card border-0">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                                Necessidades Urgentes
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-hover">
+                                    <thead>
+                                    <tr>
+                                        <th>Título</th>
+                                        <th>Localização</th>
+                                        <th>Categoria</th>
+                                        <th>Prioridade</th>
+                                        <th>Quantidade</th>
+                                        <th>Ações</th>
+                                    </tr>
+                                    </thead>
+                                    <tbody>
+                                    <tr th:each="need : ${urgentNeeds}">
+                                        <td th:text="${need.title}"></td>
+                                        <td th:text="${need.location}"></td>
+                                        <td>
+                                            <span class="badge bg-secondary" th:text="${need.category}"></span>
+                                        </td>
+                                        <td>
+                                            <span class="badge bg-danger" th:if="${need.priority == T(com.resourcemap.model.Priority).CRITICAL}">Crítica</span>
+                                            <span class="badge bg-warning" th:if="${need.priority == T(com.resourcemap.model.Priority).HIGH}">Alta</span>
+                                        </td>
+                                        <td th:text="${need.quantity + ' ' + (need.unit ?: '')}"></td>
+                                        <td>
+                                            <a th:href="@{/needs/{id}(id=${need.id})}" class="btn btn-sm btn-outline-primary">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                        </td>
+                                    </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Matches -->
+                <div class="col-lg-4">
+                    <div class="card border-0">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-clock text-info me-2"></i>
+                                Correspondências Recentes
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="timeline">
+                                <div class="timeline-item" th:each="match : ${recentMatches}">
+                                    <div class="timeline-marker bg-success"></div>
+                                    <div class="timeline-content">
+                                        <h6 class="timeline-title" th:text="${match.need.title}"></h6>
+                                        <p class="timeline-text" th:text="${match.donation.title}"></p>
+                                        <small class="text-muted" th:text="${#temporals.format(match.createdAt, 'MMM dd, yyyy')}"></small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row g-4 mt-4">
+                <div class="col-12">
+                    <div class="card border-0">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-bolt text-warning me-2"></i>
+                                Ações Rápidas
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <a href="/needs/create" class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-plus me-2"></i>Criar Necessidade
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="/donations/create" class="btn btn-outline-success w-100">
+                                        <i class="fas fa-gift me-2"></i>Adicionar Doação
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-outline-info w-100" onclick="findMatches()">
+                                        <i class="fas fa-search me-2"></i>Encontrar Correspondências
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="/dashboard/analytics" class="btn btn-outline-secondary w-100">
+                                        <i class="fas fa-chart-line me-2"></i>Ver Análises
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

@@ -1,0 +1,176 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="${donation.title} + ' - ResourceMap'">Donation Details - ResourceMap</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{layout/main :: layout(~{::main})}">
+    <main>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-header d-flex justify-content-between align-items-center">
+                        <div>
+                            <h1 class="page-title">
+                                <i class="fas fa-gift me-2"></i><span th:text="${donation.title}"></span>
+                            </h1>
+                            <p class="page-subtitle">Donation Details</p>
+                        </div>
+                        <div class="d-flex gap-2">
+                            <a th:href="@{/donations/{id}/edit(id=${donation.id})}" class="btn btn-outline-primary">
+                                <i class="fas fa-edit me-2"></i>Edit
+                            </a>
+                            <a href="/donations" class="btn btn-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Back to List
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- Donation Details -->
+                <div class="col-lg-8">
+                    <div class="card border-0 mb-4">
+                        <div class="card-body">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Category</h6>
+                                    <span class="badge bg-secondary fs-6" th:text="${donation.category}"></span>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Status</h6>
+                                    <span class="badge bg-success fs-6" th:if="${donation.status == T(com.resourcemap.model.DonationStatus).AVAILABLE}">Available</span>
+                                    <span class="badge bg-warning fs-6" th:if="${donation.status == T(com.resourcemap.model.DonationStatus).RESERVED}">Reserved</span>
+                                    <span class="badge bg-primary fs-6" th:if="${donation.status == T(com.resourcemap.model.DonationStatus).DONATED}">Donated</span>
+                                    <span class="badge bg-danger fs-6" th:if="${donation.status == T(com.resourcemap.model.DonationStatus).EXPIRED}">Expired</span>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Location</h6>
+                                    <p><i class="fas fa-map-marker-alt me-2"></i><span th:text="${donation.location}"></span></p>
+                                </div>
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Quantity Available</h6>
+                                    <p><strong th:text="${donation.quantity + ' ' + (donation.unit ?: 'items')}"></strong></p>
+                                </div>
+                            </div>
+
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <h6 class="text-muted">Created</h6>
+                                    <p th:text="${#temporals.format(donation.createdAt, 'MMM dd, yyyy HH:mm')}"></p>
+                                </div>
+                                <div class="col-md-6" th:if="${donation.expiryDate}">
+                                    <h6 class="text-muted">Expires</h6>
+                                    <p class="text-warning">
+                                        <i class="fas fa-clock me-2"></i>
+                                        <span th:text="${#temporals.format(donation.expiryDate, 'MMM dd, yyyy HH:mm')}"></span>
+                                    </p>
+                                </div>
+                                <div class="col-md-6" th:unless="${donation.expiryDate}">
+                                    <h6 class="text-muted">Expires</h6>
+                                    <p class="text-muted">No expiry date</p>
+                                </div>
+                            </div>
+
+                            <div th:if="${donation.description}">
+                                <h6 class="text-muted">Description</h6>
+                                <p th:text="${donation.description}"></p>
+                            </div>
+
+                            <div th:if="${donation.donor}">
+                                <h6 class="text-muted">Donor</h6>
+                                <p>
+                                    <i class="fas fa-user me-2"></i>
+                                    <span th:text="${donation.donor.name}"></span>
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Matches Sidebar -->
+                <div class="col-lg-4">
+                    <div class="card border-0">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-handshake me-2"></i>Matched Needs
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${matches and !matches.empty}">
+                                <div class="match-item mb-3 p-3 border rounded" th:each="match : ${matches}">
+                                    <div class="d-flex justify-content-between align-items-start mb-2">
+                                        <h6 class="mb-1" th:text="${match.need.title}"></h6>
+                                        <span class="badge bg-primary" th:text="${#numbers.formatDecimal(match.compatibilityScore * 100, 0, 0)} + '%'"></span>
+                                    </div>
+                                    <p class="small text-muted mb-2" th:text="${match.need.location}"></p>
+                                    <p class="small mb-2">
+                                        <strong>Needed:</strong>
+                                        <span th:text="${match.need.quantity + ' ' + (match.need.unit ?: 'items')}"></span>
+                                    </p>
+                                    <p class="small mb-2">
+                                        <strong>Priority:</strong>
+                                        <span class="badge badge-sm bg-danger" th:if="${match.need.priority == T(com.resourcemap.model.Priority).CRITICAL}">Critical</span>
+                                        <span class="badge badge-sm bg-warning" th:if="${match.need.priority == T(com.resourcemap.model.Priority).HIGH}">High</span>
+                                        <span class="badge badge-sm bg-info" th:if="${match.need.priority == T(com.resourcemap.model.Priority).MEDIUM}">Medium</span>
+                                        <span class="badge badge-sm bg-light text-dark" th:if="${match.need.priority == T(com.resourcemap.model.Priority).LOW}">Low</span>
+                                    </p>
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <span class="badge bg-warning" th:if="${match.status == T(com.resourcemap.model.MatchStatus).PENDING}">Pending</span>
+                                        <span class="badge bg-success" th:if="${match.status == T(com.resourcemap.model.MatchStatus).CONFIRMED}">Confirmed</span>
+                                        <span class="badge bg-primary" th:if="${match.status == T(com.resourcemap.model.MatchStatus).COMPLETED}">Completed</span>
+                                        <div th:if="${match.status == T(com.resourcemap.model.MatchStatus).PENDING}">
+                                            <button class="btn btn-sm btn-success" th:onclick="'confirmMatch(' + ${match.id} + ')'">
+                                                <i class="fas fa-check me-1"></i>Confirm
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:if="${matches == null or matches.empty}" class="text-center text-muted">
+                                <i class="fas fa-search fa-2x mb-3"></i>
+                                <p>No matches found yet.</p>
+                                <button class="btn btn-outline-primary btn-sm" onclick="findMatches()">
+                                    <i class="fas fa-sync me-2"></i>Find Matches
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Quick Actions -->
+                    <div class="card border-0 mt-3" th:if="${donation.status == T(com.resourcemap.model.DonationStatus).AVAILABLE}">
+                        <div class="card-header bg-transparent">
+                            <h6 class="card-title mb-0">
+                                <i class="fas fa-bolt me-2"></i>Quick Actions
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="d-grid gap-2">
+                                <button class="btn btn-outline-info btn-sm" onclick="findMatches()">
+                                    <i class="fas fa-search me-2"></i>Find New Matches
+                                </button>
+                                <a th:href="@{/donations/{id}/edit(id=${donation.id})}" class="btn btn-outline-secondary btn-sm">
+                                    <i class="fas fa-edit me-2"></i>Edit Donation
+                                </a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

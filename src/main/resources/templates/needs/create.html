@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title><span th:text="#{needs.create}">Criar Necessidade</span> - <span th:text="#{app.title}">ResourceMap</span></title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{layout/main :: layout(~{::main})}">
+    <main>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-plus me-2"></i>
+                            <span th:text="#{needs.create}">Criar Nova Necessidade</span>
+                        </h1>
+                        <p class="page-subtitle">Submeter uma nova solicitação de necessidade humanitária</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card border-0">
+                        <div class="card-body">
+                            <form th:action="@{/needs/create}" th:object="${need}" method="post">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            <label for="title" class="form-label" th:text="#{needs.title} + ' *'">Título *</label>
+                                            <input type="text" class="form-control" th:field="*{title}" id="title" required>
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="priority" class="form-label" th:text="#{needs.priority} + ' *'">Prioridade *</label>
+                                            <select class="form-select" th:field="*{priority}" id="priority" required>
+                                                <option value="">Selecionar Prioridade</option>
+                                                <option th:each="priority : ${priorities}" th:value="${priority}" th:text="#{${'priority.' + #strings.toLowerCase(priority)}}"></option>
+                                            </select>
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('priority')}" th:errors="*{priority}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label">Descrição</label>
+                                    <textarea class="form-control" th:field="*{description}" id="description" rows="4"
+                                              placeholder="Descrição detalhada da necessidade..."></textarea>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="category" class="form-label" th:text="#{needs.category} + ' *'">Categoria *</label>
+                                            <select class="form-select" th:field="*{category}" id="category" required>
+                                                <option value="">Selecionar Categoria</option>
+                                                <option th:each="category : ${categories}" th:value="${category}" th:text="#{${'category.' + #strings.toLowerCase(category)}}"></option>
+                                            </select>
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="location" class="form-label" th:text="#{needs.location} + ' *'">Localização *</label>
+                                            <input type="text" class="form-control" th:field="*{location}" id="location" required
+                                                   placeholder="Cidade, Estado ou endereço específico">
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('location')}" th:errors="*{location}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="quantity" class="form-label" th:text="#{needs.quantity} + ' *'">Quantidade *</label>
+                                            <input type="number" class="form-control" th:field="*{quantity}" id="quantity" min="1" required>
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="unit" class="form-label">Unidade</label>
+                                            <input type="text" class="form-control" th:field="*{unit}" id="unit"
+                                                   placeholder="kg, peças, caixas, etc.">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="deadlineDate" class="form-label" th:text="#{needs.deadline} + ' (Opcional)'">Prazo (Opcional)</label>
+                                    <input type="datetime-local" class="form-control" th:field="*{deadlineDate}" id="deadlineDate">
+                                    <small class="form-text text-muted">Quando esta necessidade é requerida?</small>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-primary">
+                                        <i class="fas fa-save me-2"></i>
+                                        <span th:text="#{needs.create}">Criar Necessidade</span>
+                                    </button>
+                                    <a href="/needs" class="btn btn-secondary">
+                                        <i class="fas fa-times me-2"></i>
+                                        <span th:text="#{action.cancel}">Cancelar</span>
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

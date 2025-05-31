@@ -1,0 +1,21 @@
+<div th:fragment="languageSelector" class="dropdown" xmlns:th="http://www.w3.org/1999/xhtml">
+    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button"
+            id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-globe me-1"></i>
+        <span th:text="#{nav.language}">Idioma</span>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="languageDropdown">
+        <li>
+            <a class="dropdown-item" th:href="@{/login(lang='pt')}">
+                <img src="https://flagcdn.com/16x12/br.png" alt="PT" class="me-2">
+                Português
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" th:href="@{/login(lang='en')}">
+                <img src="https://flagcdn.com/16x12/us.png" alt="EN" class="me-2">
+                English
+            </a>
+        </li>
+    </ul>
+</div>
