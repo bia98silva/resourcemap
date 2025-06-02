@@ -39,13 +39,13 @@ public class MatchingService {
             for (Donation donation : availableDonations) {
                 if (isCompatible(need, donation)) {
                     Double score = calculateCompatibilityScore(need, donation);
-                    if (score >= 0.7) { // 70% compatibility threshold
+                    if (score >= 0.7) { 
                         Match match = new Match(need, donation,
                                 Math.min(need.getQuantity(), donation.getQuantity()), score);
                         Match savedMatch = matchRepository.save(match);
                         newMatches.add(savedMatch);
 
-                        // Send notification via RabbitMQ
+                        
                         sendMatchNotification(savedMatch);
                     }
                 }
@@ -103,23 +103,23 @@ public class MatchingService {
     private Double calculateCompatibilityScore(Need need, Donation donation) {
         double score = 0.0;
 
-        // Category match (40%)
+        
         if (need.getCategory().equals(donation.getCategory())) {
             score += 0.4;
         }
 
-        // Location proximity (30%)
+      
         if (need.getLocation().equalsIgnoreCase(donation.getLocation())) {
             score += 0.3;
         }
 
-        // Quantity compatibility (20%)
+    
         int neededQty = need.getQuantity();
         int availableQty = donation.getQuantity();
         double qtyRatio = Math.min(neededQty, availableQty) / (double) Math.max(neededQty, availableQty);
         score += 0.2 * qtyRatio;
 
-        // Priority urgency bonus (10%)
+  
         if (need.getPriority() == Priority.CRITICAL) {
             score += 0.1;
         } else if (need.getPriority() == Priority.HIGH) {
@@ -137,7 +137,7 @@ public class MatchingService {
         match.setConfirmedAt(LocalDateTime.now());
         match.setNotes(notes);
 
-        // Update donation status
+      
         Donation donation = match.getDonation();
         donation.setStatus(DonationStatus.RESERVED);
         donationRepository.save(donation);
@@ -151,16 +151,16 @@ public class MatchingService {
 
         match.setStatus(MatchStatus.COMPLETED);
 
-        // Update need and donation status
+    
         Need need = match.getNeed();
         Donation donation = match.getDonation();
 
-        // Update quantities
+  
         int matchedQty = match.getMatchedQuantity();
         need.setQuantity(need.getQuantity() - matchedQty);
         donation.setQuantity(donation.getQuantity() - matchedQty);
 
-        // Check if fully fulfilled
+    
         if (need.getQuantity() <= 0) {
             need.setStatus(NeedStatus.FULFILLED);
         }
@@ -179,7 +179,7 @@ public class MatchingService {
         try {
             rabbitTemplate.convertAndSend("resourcemap.exchange", "notification.match", match);
         } catch (Exception e) {
-            // Log error but don't fail the transaction
+          
             System.err.println("Failed to send match notification: " + e.getMessage());
         }
     }
