@@ -34,20 +34,17 @@ public class OAuth2SuccessHandler extends SimpleUrlAuthenticationSuccessHandler 
         OAuth2User oauth2User = (OAuth2User) authentication.getPrincipal();
         String email = oauth2User.getAttribute("email");
         String name = oauth2User.getAttribute("name");
-
-        // Verificar se o usuário já existe
+        
         if (userRepository.findByEmail(email).isEmpty()) {
-            // Criar novo usuário se não existir
+    
             User newUser = new User();
             newUser.setEmail(email);
             newUser.setName(name);
-            newUser.setRole(UserRole.DONOR); // Role padrão para novos usuários OAuth
+            newUser.setRole(UserRole.DONOR); 
             newUser.setCreatedAt(LocalDateTime.now());
-            // Não definir senha para usuários OAuth
             userRepository.save(newUser);
         }
 
-        // Redirecionar para o dashboard
         getRedirectStrategy().sendRedirect(request, response, "/dashboard");
     }
 }
