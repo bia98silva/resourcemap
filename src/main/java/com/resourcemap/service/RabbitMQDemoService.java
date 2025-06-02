@@ -20,7 +20,7 @@ public class RabbitMQDemoService {
 
     private final RabbitTemplate rabbitTemplate;
 
-    // Armazenar mensagens em memória para demonstração
+
     private final Queue<Map<String, Object>> messageHistory = new ConcurrentLinkedQueue<>();
     private final AtomicLong messagesSent = new AtomicLong(0);
     private final AtomicLong messagesReceived = new AtomicLong(0);
@@ -38,10 +38,10 @@ public class RabbitMQDemoService {
             messageData.put("timestamp", LocalDateTime.now().format(DateTimeFormatter.ofPattern("dd/MM/yyyy HH:mm:ss")));
             messageData.put("sender", "Demo Producer");
 
-            // Enviar para a fila de notificações
+         
             rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "notification.demo", messageData);
 
-            // Registrar na história
+         
             addToHistory("SENT", "Test Message", message, type);
             messagesSent.incrementAndGet();
             totalMessages.incrementAndGet();
@@ -54,15 +54,13 @@ public class RabbitMQDemoService {
 
     public void sendMatchNotificationDemo() {
         try {
-            // Criar objetos demo para simular um match real
+            
             Need demoNeed = createDemoNeed();
             Donation demoDonation = createDemoDonation();
             Match demoMatch = createDemoMatch(demoNeed, demoDonation);
 
-            // Enviar notificação de match
             rabbitTemplate.convertAndSend(RabbitConfig.EXCHANGE, "notification.match", demoMatch);
 
-            // Registrar na história
             addToHistory("SENT", "Match Notification",
                     "Match encontrado: " + demoNeed.getTitle() + " ↔ " + demoDonation.getTitle(),
                     "MATCH");
@@ -92,7 +90,7 @@ public class RabbitMQDemoService {
 
         messageHistory.offer(entry);
 
-        // Manter apenas os últimos 50 registros
+
         while (messageHistory.size() > 50) {
             messageHistory.poll();
         }
@@ -118,7 +116,7 @@ public class RabbitMQDemoService {
         messageHistory.clear();
     }
 
-    // Métodos para criar objetos demo
+ 
     private Need createDemoNeed() {
         Need need = new Need();
         need.setId(999L);
