@@ -313,69 +313,10 @@ docker build -t resourcemap:latest .
 docker run -p 8080:8080 resourcemap:latest
 ```
 
-## 🤝 Contribuição
-
-1. **Fork** o projeto
-2. **Clone** seu fork
-3. **Crie** uma branch: `git checkout -b minha-feature`
-4. **Commit** suas mudanças: `git commit -m 'Adiciona nova feature'`
-5. **Push** para a branch: `git push origin minha-feature`
-6. **Abra** um Pull Request
-
-### Padrões de Código
-- **Java**: Seguir convenções Oracle
-- **Commits**: Usar padrão Conventional Commits
-- **Testes**: Cobertura mínima de 80%
-
-## 🐛 Troubleshooting
-
-### Problemas Comuns
-
-#### RabbitMQ não conecta
-```bash
-# Verificar se Docker está rodando
-docker ps | grep rabbitmq
-
-# Restartar RabbitMQ
-docker restart rabbitmq
-```
-
-#### Ollama não responde
-```bash
-# Verificar status do Ollama
-ollama list
-
-# Baixar modelo novamente
-ollama pull llama3.2:1b
-
-# Verificar logs
-docker logs ollama
-```
-
-#### Erro de conexão Oracle
-```bash
-# Verificar conectividade
-telnet oracle.fiap.com.br 1521
-
-# Testar credenciais via SQL Developer
-```
-
-#### Porta 8080 já em uso
-```bash
-# Verificar processo
-lsof -i :8080
-
-# Matar processo
-kill -9 <PID>
-
-# Ou usar porta diferente
-mvn spring-boot:run -Dserver.port=8081
-```
-
 ## 👥 Equipe
-Nome: Beatriz Silva RM552600
-Vitor Onofre Ramos RM553241
-Pedro Henrique soares araujo - RM553801
+- ** Beatriz Silva RM552600
+- ** Vitor Onofre Ramos RM553241
+- ** Pedro Henrique soares araujo - RM553801
 
 - **AI Integration**: Powered by Ollama & Llama 3.2
 - **Infrastructure**: Docker & RabbitMQ
