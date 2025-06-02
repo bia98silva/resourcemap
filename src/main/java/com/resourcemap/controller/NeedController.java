@@ -84,7 +84,7 @@ public class NeedController {
             Need need = needService.findById(id)
                     .orElseThrow(() -> new RuntimeException("Necessidade não encontrada"));
 
-            // Atualizar os campos
+         
             need.setTitle(title);
             need.setDescription(description);
             need.setCategory(Category.valueOf(category));
@@ -93,7 +93,7 @@ public class NeedController {
             need.setQuantity(quantity);
             need.setUnit(unit);
 
-            // Salvar a necessidade atualizada
+         
             needService.updateNeed(need);
 
             redirectAttributes.addFlashAttribute("successMessage", "Necessidade atualizada com sucesso!");
