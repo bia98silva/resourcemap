@@ -40,7 +40,7 @@ public class RabbitConfig {
         return BindingBuilder.bind(notificationQueue()).to(exchange()).with("notification.*");
     }
 
-    // SOLUÇÃO DEFINITIVA: JSON para maior segurança e interoperabilidade
+
     @Bean
     public Jackson2JsonMessageConverter messageConverter() {
         return new Jackson2JsonMessageConverter();
