@@ -1,0 +1,140 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{donations.create.title} + ' - ' + #{app.title}">Adicionar Doação - ResourceMap</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{layout/main :: layout(~{::main})}">
+    <main>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-gift me-2"></i>
+                            <span th:text="#{donations.create.title}">Adicionar Nova Doação</span>
+                        </h1>
+                        <p class="page-subtitle" th:text="#{donations.create.subtitle}">Contribuir com recursos para ajudar os necessitados</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="card border-0">
+                        <div class="card-body">
+                            <form th:action="@{/donations/create}" th:object="${donation}" method="post">
+                                <div class="row">
+                                    <div class="col-md-8">
+                                        <div class="mb-3">
+                                            <label for="title" class="form-label">
+                                                <span th:text="#{donations.title.field}">Título</span> *
+                                            </label>
+                                            <input type="text" class="form-control" th:field="*{title}" id="title" required
+                                                   placeholder="O que você está doando?">
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('title')}" th:errors="*{title}"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-4">
+                                        <div class="mb-3">
+                                            <label for="category" class="form-label">
+                                                <span th:text="#{donations.category}">Categoria</span> *
+                                            </label>
+                                            <select class="form-select" th:field="*{category}" id="category" required>
+                                                <option value="">Selecionar Categoria</option>
+                                                <option value="FOOD" th:text="#{category.food}">Alimentação</option>
+                                                <option value="WATER" th:text="#{category.water}">Água</option>
+                                                <option value="CLOTHING" th:text="#{category.clothing}">Vestuário</option>
+                                                <option value="MEDICAL" th:text="#{category.medical}">Médico</option>
+                                                <option value="SHELTER" th:text="#{category.shelter}">Abrigo</option>
+                                                <option value="EDUCATION" th:text="#{category.education}">Educação</option>
+                                                <option value="TRANSPORTATION" th:text="#{category.transportation}">Transporte</option>
+                                                <option value="OTHER" th:text="#{category.other}">Outros</option>
+                                            </select>
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('category')}" th:errors="*{category}"></div>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="description" class="form-label" th:text="#{donations.description}">Descrição</label>
+                                    <textarea class="form-control" th:field="*{description}" id="description" rows="4"
+                                              placeholder="Descrição detalhada do que você está doando..."></textarea>
+                                    <div class="invalid-feedback" th:if="${#fields.hasErrors('description')}" th:errors="*{description}"></div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="location" class="form-label">
+                                                <span th:text="#{donations.location}">Localização</span> *
+                                            </label>
+                                            <input type="text" class="form-control" th:field="*{location}" id="location" required
+                                                   placeholder="Onde os itens podem ser coletados?">
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('location')}" th:errors="*{location}"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="expiryDate" class="form-label">
+                                                <span th:text="#{donations.expiry.date}">Data de Expiração</span> (Opcional)
+                                            </label>
+                                            <input type="datetime-local" class="form-control" th:field="*{expiryDate}" id="expiryDate">
+                                            <small class="form-text text-muted" th:text="#{donations.expiry.question}">Quando esta doação expira?</small>
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="quantity" class="form-label">
+                                                <span th:text="#{donations.quantity}">Quantidade</span> *
+                                            </label>
+                                            <input type="number" class="form-control" th:field="*{quantity}" id="quantity" min="1" required>
+                                            <div class="invalid-feedback" th:if="${#fields.hasErrors('quantity')}" th:errors="*{quantity}"></div>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-3">
+                                            <label for="unit" class="form-label" th:text="#{donations.unit}">Unidade</label>
+                                            <input type="text" class="form-control" th:field="*{unit}" id="unit"
+                                                   placeholder="kg, peças, caixas, litros, etc.">
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div class="alert alert-info">
+                                    <i class="fas fa-info-circle me-2"></i>
+                                    <strong th:text="#{donations.note}">Nota:</strong>
+                                    <span th:text="#{donations.note.description}">Uma vez que você submeter esta doação, nosso sistema automaticamente tentará combiná-la com necessidades existentes. Você será notificado de quaisquer correspondências potenciais.</span>
+                                </div>
+
+                                <div class="d-flex gap-2">
+                                    <button type="submit" class="btn btn-success">
+                                        <i class="fas fa-gift me-2"></i>
+                                        <span th:text="#{donations.create}">Adicionar Doação</span>
+                                    </button>
+                                    <a href="/donations" class="btn btn-secondary">
+                                        <i class="fas fa-times me-2"></i>
+                                        <span th:text="#{action.cancel}">Cancelar</span>
+                                    </a>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>

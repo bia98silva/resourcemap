@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="#{ai.title} + ' - ' + #{app.title}">Assistente IA - ResourceMap</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+  <style>
+    .ai-card {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    }
+
+    .ai-response {
+        background: #f8f9fa;
+        border-left: 4px solid #667eea;
+        padding: 1rem;
+        margin-top: 1rem;
+        border-radius: 0 8px 8px 0;
+    }
+
+    .chat-container {
+        height: 400px;
+        overflow-y: auto;
+        border: 1px solid #dee2e6;
+        border-radius: 8px;
+        padding: 1rem;
+        background: #fff;
+    }
+
+    .chat-message {
+        margin-bottom: 1rem;
+    }
+
+    .chat-message.user {
+        text-align: right;
+    }
+
+    .chat-message.ai {
+        text-align: left;
+    }
+
+    .chat-bubble {
+        display: inline-block;
+        padding: 0.75rem 1rem;
+        border-radius: 18px;
+        max-width: 70%;
+        word-wrap: break-word;
+    }
+
+    .chat-bubble.user {
+        background: #667eea;
+        color: white;
+    }
+
+    .chat-bubble.ai {
+        background: #e9ecef;
+        color: #333;
+    }
+
+    .loading-indicator {
+        display: none;
+        text-align: center;
+        padding: 1rem;
+    }
+
+    .spinner-border-sm {
+        width: 1rem;
+        height: 1rem;
+    }
+  </style>
+</head>
+<body>
+<div th:replace="~{layout/main :: layout(~{::main})}">
+  <main>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="page-header">
+            <h1 class="page-title">
+              <i class="fas fa-robot me-2"></i>
+              <span th:text="#{ai.title}">Assistente IA</span>
+            </h1>
+            <p class="page-subtitle" th:text="#{ai.subtitle}">Utilize inteligência artificial para otimizar a gestão humanitária</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Dashboard Cards -->
+      <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+          <div class="ai-card text-center">
+            <i class="fas fa-lightbulb fa-2x mb-2"></i>
+            <h5 th:text="#{ai.generate.descriptions}">Gerar Descrições</h5>
+            <p class="mb-0" th:text="#{ai.description.subtitle}">IA cria descrições detalhadas para necessidades</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="ai-card text-center">
+            <i class="fas fa-handshake fa-2x mb-2"></i>
+            <h5 th:text="#{ai.suggest.matching}">Sugerir Correspondências</h5>
+            <p class="mb-0" th:text="#{ai.matching.subtitle}">Otimização inteligente de doações</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="ai-card text-center">
+            <i class="fas fa-chart-line fa-2x mb-2"></i>
+            <h5 th:text="#{ai.impact.reports}">Relatórios de Impacto</h5>
+            <p class="mb-0" th:text="#{ai.reports.subtitle}">Análises automáticas de desempenho</p>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="ai-card text-center">
+            <i class="fas fa-comments fa-2x mb-2"></i>
+            <h5 th:text="#{ai.chat}">Chat Inteligente</h5>
+            <p class="mb-0" th:text="#{ai.chat.subtitle}">Converse com a IA sobre estratégias</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Gerador de Descrições -->
+        <div class="col-lg-6">
+          <div class="card border-0">
+            <div class="card-header bg-transparent">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-magic text-primary me-2"></i>
+                <span th:text="#{ai.description.title}">Gerador de Descrições IA</span>
+              </h5>
+            </div>
+            <div class="card-body">
+              <form id="descriptionForm">
+                <div class="mb-3">
+                  <label for="title" class="form-label" th:text="#{ai.form.title}">Título da Necessidade</label>
+                  <input type="text" class="form-control" id="title"
+                         th:placeholder="#{ai.form.title.placeholder}">
+                </div>
+                <div class="mb-3">
+                  <label for="category" class="form-label" th:text="#{ai.form.category}">Categoria</label>
+                  <select class="form-select" id="category">
+                    <option value="" th:text="#{ai.form.category.select}">Selecionar categoria</option>
+                    <option value="FOOD" th:text="#{category.food}">Alimentação</option>
+                    <option value="WATER" th:text="#{category.water}">Água</option>
+                    <option value="CLOTHING" th:text="#{category.clothing}">Vestuário</option>
+                    <option value="MEDICAL" th:text="#{category.medical}">Médico</option>
+                    <option value="SHELTER" th:text="#{category.shelter}">Abrigo</option>
+                    <option value="EDUCATION" th:text="#{category.education}">Educação</option>
+                    <option value="TRANSPORTATION" th:text="#{category.transportation}">Transporte</option>
+                    <option value="OTHER" th:text="#{category.other}">Outros</option>
+                  </select>
+                </div>
+                <div class="mb-3">
+                  <label for="location" class="form-label" th:text="#{ai.form.location}">Localização</label>
+                  <input type="text" class="form-control" id="location"
+                         th:placeholder="#{ai.form.location.placeholder}">
+                </div>
+                <button type="submit" class="btn btn-primary">
+                  <i class="fas fa-wand-magic-sparkles me-2"></i>
+                  <span th:text="#{ai.btn.generate.description}">Gerar Descrição</span>
+                </button>
+              </form>
+              <div id="descriptionResponse"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Sugestões de Correspondência -->
+        <div class="col-lg-6">
+          <div class="card border-0">
+            <div class="card-header bg-transparent">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-link text-success me-2"></i>
+                <span th:text="#{ai.matching.title}">Otimizador de Correspondências</span>
+              </h5>
+            </div>
+            <div class="card-body">
+              <form id="matchingForm">
+                <div class="mb-3">
+                  <label for="needDescription" class="form-label" th:text="#{ai.form.need.description}">Descrição da Necessidade</label>
+                  <textarea class="form-control" id="needDescription" rows="3"
+                            th:placeholder="#{ai.form.need.description.placeholder}"></textarea>
+                </div>
+                <div class="mb-3">
+                  <label for="donationDescription" class="form-label" th:text="#{ai.form.donation.description}">Descrição da Doação</label>
+                  <textarea class="form-control" id="donationDescription" rows="3"
+                            th:placeholder="#{ai.form.donation.description.placeholder}"></textarea>
+                </div>
+                <button type="submit" class="btn btn-success">
+                  <i class="fas fa-brain me-2"></i>
+                  <span th:text="#{ai.btn.suggest.strategy}">Sugerir Estratégia</span>
+                </button>
+              </form>
+              <div id="matchingResponse"></div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Chat com IA -->
+        <div class="col-lg-8">
+          <div class="card border-0">
+            <div class="card-header bg-transparent">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-robot text-info me-2"></i>
+                <span th:text="#{ai.chat.title}">Chat com Assistente IA</span>
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="chat-container" id="chatContainer">
+                <div class="chat-message ai">
+                  <div class="chat-bubble ai">
+                    <i class="fas fa-robot me-1"></i>
+                    <span th:text="#{ai.chat.welcome}">Olá! Sou seu assistente de IA para gestão humanitária. Como posso ajudar hoje?</span>
+                  </div>
+                </div>
+              </div>
+              <div class="loading-indicator" id="chatLoading">
+                <div class="spinner-border spinner-border-sm text-primary" role="status">
+                  <span class="visually-hidden" th:text="#{message.loading}">Carregando...</span>
+                </div>
+                <span class="ms-2" th:text="#{ai.btn.thinking}">IA pensando...</span>
+              </div>
+              <form id="chatForm" class="mt-3">
+                <div class="input-group">
+                  <input type="text" class="form-control" id="chatInput"
+                         th:placeholder="#{ai.form.chat.input}">
+                  <button type="submit" class="btn btn-info">
+                    <i class="fas fa-paper-plane"></i>
+                  </button>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+
+        <!-- Gerador de Relatórios e Otimizações -->
+        <div class="col-lg-4">
+          <div class="card border-0 mb-3">
+            <div class="card-header bg-transparent">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-chart-pie text-warning me-2"></i>
+                <span th:text="#{ai.reports.title}">Relatório de Impacto</span>
+              </h5>
+            </div>
+            <div class="card-body">
+              <p class="text-muted" th:text="#{ai.reports.subtitle}">
+                Gere um relatório automático de impacto baseado nos dados atuais do sistema.
+              </p>
+              <div class="mb-3">
+                <small class="text-muted">
+                  <strong th:text="#{ai.current.data}">Dados atuais:</strong><br>
+                  • <span th:text="${stats?.activeNeeds ?: 0}">0</span> <span th:text="#{ai.active.needs}">necessidades ativas</span><br>
+                  • <span th:text="${stats?.availableDonations ?: 0}">0</span> <span th:text="#{ai.available.donations}">doações disponíveis</span><br>
+                  • <span th:text="${stats?.pendingMatches ?: 0}">0</span> <span th:text="#{ai.pending.matches}">correspondências pendentes</span>
+                </small>
+              </div>
+              <button type="button" class="btn btn-warning w-100 mb-2" id="generateReportBtn">
+                <i class="fas fa-file-alt me-2"></i>
+                <span th:text="#{ai.btn.generate.report}">Gerar Relatório IA</span>
+              </button>
+              <button type="button" class="btn btn-outline-warning w-100" id="generateOptimizationsBtn">
+                <i class="fas fa-cogs me-2"></i>
+                <span th:text="#{ai.btn.optimization.suggestions}">Sugestões de Otimização</span>
+              </button>
+              <div id="reportResponse"></div>
+              <div id="optimizationsResponse"></div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+<script th:inline="javascript">
+  document.addEventListener('DOMContentLoaded', function() {
+      // Mensagens localizadas
+      const messages = {
+          error: /*[[#{message.error}]]*/ 'Erro!',
+          fillFields: /*[['Preencha todos os campos']]*/ 'Preencha todos os campos',
+          fillBothDescriptions: /*[['Preencha ambas as descrições']]*/ 'Preencha ambas as descrições',
+          aiCommunicationError: /*[['Falha na comunicação com a IA']]*/ 'Falha na comunicação com a IA',
+          aiError: /*[['Erro na comunicação com a IA']]*/ 'Erro na comunicação com a IA',
+          reportError: /*[['Falha na geração do relatório']]*/ 'Falha na geração do relatório',
+          optimizationError: /*[['Falha na geração de otimizações']]*/ 'Falha na geração de otimizações',
+          generating: /*[[#{ai.btn.generating}]]*/ 'Gerando...',
+          analyzing: /*[[#{ai.btn.analyzing}]]*/ 'Analisando...',
+          aiGeneratedTitle: /*[[#{ai.response.generated}]]*/ 'Descrição Gerada pela IA:',
+          aiSuggestionTitle: /*[[#{ai.response.suggestion}]]*/ 'Sugestão da IA:',
+          impactReportTitle: /*[[#{ai.response.report}]]*/ 'Relatório de Impacto:',
+          optimizationTitle: /*[[#{ai.response.optimization}]]*/ 'Sugestões de Otimização:'
+      };
+
+      // Gerador de Descrições
+      document.getElementById('descriptionForm').addEventListener('submit', async function(e) {
+          e.preventDefault();
+
+          const title = document.getElementById('title').value;
+          const category = document.getElementById('category').value;
+          const location = document.getElementById('location').value;
+
+          if (!title || !category || !location) {
+              showToast(messages.error, messages.fillFields, 'error');
+              return;
+          }
+
+          try {
+              const response = await fetch('/ai-assistant/generate-description', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ title, category, location })
+              });
+
+              const data = await response.json();
+
+              if (data.status === 'success') {
+                  document.getElementById('descriptionResponse').innerHTML = `
+                      <div class="ai-response">
+                          <h6><i class="fas fa-robot me-2"></i>${messages.aiGeneratedTitle}</h6>
+                          <p>${data.description}</p>
+                      </div>
+                  `;
+              } else {
+                  showToast(messages.error, data.error, 'error');
+              }
+          } catch (error) {
+              showToast(messages.error, messages.aiCommunicationError, 'error');
+          }
+      });
+
+      // Sugestões de Correspondência
+      document.getElementById('matchingForm').addEventListener('submit', async function(e) {
+          e.preventDefault();
+
+          const needDescription = document.getElementById('needDescription').value;
+          const donationDescription = document.getElementById('donationDescription').value;
+
+          if (!needDescription || !donationDescription) {
+              showToast(messages.error, messages.fillBothDescriptions, 'error');
+              return;
+          }
+
+          try {
+              const response = await fetch('/ai-assistant/suggest-matching', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ needDescription, donationDescription })
+              });
+
+              const data = await response.json();
+
+              if (data.status === 'success') {
+                  document.getElementById('matchingResponse').innerHTML = `
+                      <div class="ai-response">
+                          <h6><i class="fas fa-lightbulb me-2"></i>${messages.aiSuggestionTitle}</h6>
+                          <p>${data.suggestion}</p>
+                      </div>
+                  `;
+              } else {
+                  showToast(messages.error, data.error, 'error');
+              }
+          } catch (error) {
+              showToast(messages.error, messages.aiCommunicationError, 'error');
+          }
+      });
+
+      // Chat com IA
+      document.getElementById('chatForm').addEventListener('submit', async function(e) {
+          e.preventDefault();
+
+          const input = document.getElementById('chatInput');
+          const message = input.value.trim();
+
+          if (!message) return;
+
+          // Adicionar mensagem do usuário
+          addChatMessage(message, 'user');
+          input.value = '';
+
+          // Mostrar indicador de carregamento
+          document.getElementById('chatLoading').style.display = 'block';
+
+          try {
+              const response = await fetch('/ai-assistant/chat', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  },
+                  body: JSON.stringify({ message })
+              });
+
+              const data = await response.json();
+              document.getElementById('chatLoading').style.display = 'none';
+
+              if (data.status === 'success') {
+                  addChatMessage(data.response, 'ai');
+              } else {
+                  addChatMessage('Desculpe, ocorreu um erro: ' + data.error, 'ai');
+              }
+          } catch (error) {
+              document.getElementById('chatLoading').style.display = 'none';
+              addChatMessage(messages.aiError, 'ai');
+          }
+      });
+
+      // Gerador de Relatórios
+      document.getElementById('generateReportBtn').addEventListener('click', async function() {
+          const btn = this;
+          const originalText = btn.innerHTML;
+
+          btn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>' + messages.generating;
+          btn.disabled = true;
+
+          try {
+              const response = await fetch('/ai-assistant/generate-report', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  }
+              });
+
+              const data = await response.json();
+
+              if (data.status === 'success') {
+                  document.getElementById('reportResponse').innerHTML = `
+                      <div class="ai-response mt-3">
+                          <h6><i class="fas fa-chart-line me-2"></i>${messages.impactReportTitle}</h6>
+                          <div style="white-space: pre-line;">${data.report}</div>
+                      </div>
+                  `;
+              } else {
+                  showToast(messages.error, data.error, 'error');
+              }
+          } catch (error) {
+              showToast(messages.error, messages.reportError, 'error');
+          } finally {
+              btn.innerHTML = originalText;
+              btn.disabled = false;
+          }
+      });
+
+      // Gerador de Otimizações
+      document.getElementById('generateOptimizationsBtn').addEventListener('click', async function() {
+          const btn = this;
+          const originalText = btn.innerHTML;
+
+          btn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>' + messages.analyzing;
+          btn.disabled = true;
+
+          try {
+              const response = await fetch('/ai-assistant/optimize', {
+                  method: 'POST',
+                  headers: {
+                      'Content-Type': 'application/json',
+                  }
+              });
+
+              const data = await response.json();
+
+              if (data.status === 'success') {
+                  document.getElementById('optimizationsResponse').innerHTML = `
+                      <div class="ai-response mt-3">
+                          <h6><i class="fas fa-cogs me-2"></i>${messages.optimizationTitle}</h6>
+                          <div style="white-space: pre-line;">${data.suggestions}</div>
+                      </div>
+                  `;
+              } else {
+                  showToast(messages.error, data.error, 'error');
+              }
+          } catch (error) {
+              showToast(messages.error, messages.optimizationError, 'error');
+          } finally {
+              btn.innerHTML = originalText;
+              btn.disabled = false;
+          }
+      });
+
+      function addChatMessage(message, type) {
+          const chatContainer = document.getElementById('chatContainer');
+          const messageDiv = document.createElement('div');
+          messageDiv.className = `chat-message ${type}`;
+
+          const icon = type === 'ai' ? '<i class="fas fa-robot me-1"></i>' : '<i class="fas fa-user me-1"></i>';
+
+          messageDiv.innerHTML = `
+              <div class="chat-bubble ${type}">
+                  ${icon}${message}
+              </div>
+          `;
+
+          chatContainer.appendChild(messageDiv);
+          chatContainer.scrollTop = chatContainer.scrollHeight;
+      }
+  });
+</script>
+</body>
+</html>

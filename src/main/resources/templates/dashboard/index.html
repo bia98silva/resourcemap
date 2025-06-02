@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title th:text="#{dashboard.title} + ' - ' + #{app.title}">Dashboard - ResourceMap</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{layout/main :: layout(~{::main})}">
+    <main>
+        <div class="container-fluid">
+            <div class="row">
+                <div class="col-12">
+                    <div class="page-header">
+                        <h1 class="page-title">
+                            <i class="fas fa-chart-bar me-2"></i>
+                            <span th:text="#{dashboard.title}">Dashboard</span>
+                        </h1>
+                        <p class="page-subtitle" th:text="#{dashboard.subtitle}">Visão geral das atividades de ajuda humanitária</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Statistics Cards -->
+            <div class="row g-4 mb-4">
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stats-card border-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-icon bg-primary">
+                                    <i class="fas fa-heart text-white"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h3 class="stats-number mb-0" th:text="${stats?.activeNeeds ?: 0}">0</h3>
+                                    <p class="stats-label mb-0" th:text="#{stats.active.needs}">Necessidades Ativas</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stats-card border-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-icon bg-success">
+                                    <i class="fas fa-gift text-white"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h3 class="stats-number mb-0" th:text="${stats?.availableDonations ?: 0}">0</h3>
+                                    <p class="stats-label mb-0" th:text="#{stats.available.donations}">Doações Disponíveis</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stats-card border-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-icon bg-warning">
+                                    <i class="fas fa-handshake text-white"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h3 class="stats-number mb-0" th:text="${stats?.pendingMatches ?: 0}">0</h3>
+                                    <p class="stats-label mb-0" th:text="#{stats.pending.matches}">Correspondências Pendentes</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-xl-3 col-md-6">
+                    <div class="card stats-card border-0">
+                        <div class="card-body">
+                            <div class="d-flex align-items-center">
+                                <div class="stats-icon bg-info">
+                                    <i class="fas fa-users text-white"></i>
+                                </div>
+                                <div class="ms-3">
+                                    <h3 class="stats-number mb-0" th:text="${stats?.totalUsers ?: 0}">0</h3>
+                                    <p class="stats-label mb-0" th:text="#{stats.total.users}">Total de Usuários</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts and Tables Row -->
+            <div class="row g-4">
+                <!-- Urgent Needs -->
+                <div class="col-lg-8">
+                    <div class="card border-0">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-exclamation-triangle text-danger me-2"></i>
+                                <span th:text="#{stats.urgent.needs}">Necessidades Urgentes</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${urgentNeeds != null and !urgentNeeds.empty}">
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                        <tr>
+                                            <th th:text="#{needs.title.field}">Título</th>
+                                            <th th:text="#{needs.location}">Localização</th>
+                                            <th th:text="#{needs.category}">Categoria</th>
+                                            <th th:text="#{needs.priority}">Prioridade</th>
+                                            <th th:text="#{needs.quantity}">Quantidade</th>
+                                            <th th:text="#{needs.actions}">Ações</th>
+                                        </tr>
+                                        </thead>
+                                        <tbody>
+                                        <tr th:each="need : ${urgentNeeds}">
+                                            <td th:text="${need.title}"></td>
+                                            <td th:text="${need.location}"></td>
+                                            <td>
+                                                <span class="badge bg-secondary" th:text="#{${'category.' + #strings.toLowerCase(need.category)}}"></span>
+                                            </td>
+                                            <td>
+                                                <span class="badge bg-danger" th:if="${need.priority == T(com.resourcemap.model.Priority).CRITICAL}" th:text="#{priority.critical}">Crítica</span>
+                                                <span class="badge bg-warning" th:if="${need.priority == T(com.resourcemap.model.Priority).HIGH}" th:text="#{priority.high}">Alta</span>
+                                                <span class="badge bg-info" th:if="${need.priority == T(com.resourcemap.model.Priority).MEDIUM}" th:text="#{priority.medium}">Média</span>
+                                                <span class="badge bg-light text-dark" th:if="${need.priority == T(com.resourcemap.model.Priority).LOW}" th:text="#{priority.low}">Baixa</span>
+                                            </td>
+                                            <td th:text="${need.quantity + ' ' + (need.unit ?: '')}"></td>
+                                            <td>
+                                                <a th:href="@{/needs/{id}(id=${need.id})}" class="btn btn-sm btn-outline-primary" th:title="#{action.view}">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                        </tbody>
+                                    </table>
+                                </div>
+                            </div>
+                            <div th:if="${urgentNeeds == null or urgentNeeds.empty}" class="text-center text-muted py-4">
+                                <i class="fas fa-heart fa-2x mb-3"></i>
+                                <p th:text="#{message.no.urgent.needs}">Nenhuma necessidade urgente no momento.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Recent Matches -->
+                <div class="col-lg-4">
+                    <div class="card border-0">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-clock text-info me-2"></i>
+                                <span th:text="#{stats.recent.matches}">Correspondências Recentes</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div th:if="${recentMatches != null and !recentMatches.empty}">
+                                <div class="timeline">
+                                    <div class="timeline-item" th:each="match : ${recentMatches}">
+                                        <div class="timeline-marker bg-success"></div>
+                                        <div class="timeline-content">
+                                            <h6 class="timeline-title" th:text="${match.need.title}"></h6>
+                                            <p class="timeline-text" th:text="${match.donation.title}"></p>
+                                            <small class="text-muted" th:text="${#temporals.format(match.createdAt, 'MMM dd, yyyy')}"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div th:if="${recentMatches == null or recentMatches.empty}" class="text-center text-muted py-4">
+                                <i class="fas fa-handshake fa-2x mb-3"></i>
+                                <p th:text="#{message.no.recent.matches}">Nenhuma correspondência recente.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Quick Actions -->
+            <div class="row g-4 mt-4">
+                <div class="col-12">
+                    <div class="card border-0">
+                        <div class="card-header bg-transparent">
+                            <h5 class="card-title mb-0">
+                                <i class="fas fa-bolt text-warning me-2"></i>
+                                <span th:text="#{dashboard.quick.actions}">Ações Rápidas</span>
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-3">
+                                    <a href="/needs/create" class="btn btn-outline-primary w-100">
+                                        <i class="fas fa-plus me-2"></i>
+                                        <span th:text="#{action.create.need}">Criar Necessidade</span>
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="/donations/create" class="btn btn-outline-success w-100">
+                                        <i class="fas fa-gift me-2"></i>
+                                        <span th:text="#{action.add.donation}">Adicionar Doação</span>
+                                    </a>
+                                </div>
+                                <div class="col-md-3">
+                                    <button class="btn btn-outline-info w-100" onclick="findMatches()">
+                                        <i class="fas fa-search me-2"></i>
+                                        <span th:text="#{action.find.matches}">Encontrar Correspondências</span>
+                                    </button>
+                                </div>
+                                <div class="col-md-3">
+                                    <a href="/dashboard/analytics" class="btn btn-outline-secondary w-100">
+                                        <i class="fas fa-chart-line me-2"></i>
+                                        <span th:text="#{dashboard.view.analytics}">Ver Análises</span>
+                                    </a>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+</body>
+</html>
