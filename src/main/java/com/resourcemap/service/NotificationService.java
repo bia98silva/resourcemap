@@ -18,11 +18,11 @@ public class NotificationService {
     @RabbitListener(queues = "notification.queue")
     public void handleMatchNotification(Match match) {
         try {
-            // Send email notifications (simulado)
+         
             sendEmailToNGO(match);
             sendEmailToDonor(match);
 
-            // Registrar no sistema de monitoramento
+           
             String content = String.format("Match processado: %s ↔ %s (Score: %.2f)",
                     match.getNeed().getTitle(),
                     match.getDonation().getTitle(),
@@ -30,7 +30,7 @@ public class NotificationService {
 
             rabbitMQDemoService.recordReceivedMessage("Match Notification", content);
 
-            // Log the notification
+     
             System.out.println("✅ CONSUMIDOR: Match notification processada para Match ID: " + match.getId());
 
         } catch (Exception e) {
@@ -46,10 +46,10 @@ public class NotificationService {
             String content = message.get("content").toString();
             String type = message.get("type").toString();
 
-            // Registrar no sistema de monitoramento
+         
             rabbitMQDemoService.recordReceivedMessage(type, content);
 
-            // Log da mensagem recebida
+            
             System.out.println("✅ CONSUMIDOR: Mensagem de teste recebida - " + content);
 
         } catch (Exception e) {
@@ -60,21 +60,21 @@ public class NotificationService {
     }
 
     private void sendEmailToNGO(Match match) {
-        // Simulação de envio de email para ONG
+       
         String ngoName = match.getNeed().getOrganization() != null ?
                 match.getNeed().getOrganization().getName() : "ONG Demo";
         System.out.println("📧 Email enviado para ONG: " + ngoName);
     }
 
     private void sendEmailToDonor(Match match) {
-        // Simulação de envio de email para doador
+       
         String donorName = match.getDonation().getDonor() != null ?
                 match.getDonation().getDonor().getName() : "Doador Demo";
         System.out.println("📧 Email enviado para doador: " + donorName);
     }
 
     public void sendUrgentNeedAlert(Long needId) {
-        // Implementation for urgent need alerts
+       
         System.out.println("🚨 Alerta de necessidade urgente enviado para Need ID: " + needId);
         rabbitMQDemoService.recordReceivedMessage("Urgent Alert",
                 "Alerta processado para necessidade ID: " + needId);
