@@ -10,7 +10,7 @@ public class AIService {
 
     private final ChatClient chatClient;
 
-    // ✅ MANTÉM O SPRING AI OFICIAL
+
     public AIService(ChatClient.Builder chatClientBuilder) {
         this.chatClient = chatClientBuilder.build();
     }
