@@ -28,18 +28,18 @@ public class ReportService {
     public Map<String, Object> getDashboardStatistics() {
         Map<String, Object> stats = new HashMap<>();
 
-        // Basic counts
+     
         stats.put("totalNeeds", needRepository.count());
         stats.put("totalDonations", donationRepository.count());
         stats.put("totalMatches", matchRepository.count());
         stats.put("totalUsers", userRepository.count());
 
-        // Active counts
+     
         stats.put("activeNeeds", needRepository.findByStatus(NeedStatus.ACTIVE).size());
         stats.put("availableDonations", donationRepository.findByStatus(DonationStatus.AVAILABLE).size());
         stats.put("pendingMatches", matchRepository.findByStatus(MatchStatus.PENDING).size());
 
-        // Category breakdown
+      
         Map<Category, Long> needsByCategory = new HashMap<>();
         Map<Category, Long> donationsByCategory = new HashMap<>();
 
