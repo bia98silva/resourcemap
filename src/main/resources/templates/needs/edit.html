@@ -1,0 +1,215 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <title th:text="#{needs.edit.title} + ' - ' + #{app.title}">Editar Necessidade - ResourceMap</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+</head>
+<body>
+<div th:replace="~{layout/main :: layout(~{::main})}">
+  <main>
+    <div class="container-fluid py-4">
+      <div class="row">
+        <div class="col-12">
+          <div class="d-flex justify-content-between align-items-center mb-4">
+            <div>
+              <h1>
+                <i class="fas fa-edit me-2"></i>
+                <span th:text="#{needs.edit.title}">Editar Necessidade</span>
+              </h1>
+              <p class="text-muted" th:text="#{needs.edit.subtitle}">Atualizar informações da necessidade</p>
+            </div>
+            <a href="/needs" class="btn btn-secondary">
+              <i class="fas fa-arrow-left me-2"></i>
+              <span th:text="#{action.back}">Voltar</span>
+            </a>
+          </div>
+        </div>
+      </div>
+
+      <div class="row justify-content-center">
+        <div class="col-lg-8">
+          <div class="card border-0">
+            <div class="card-body">
+              <form th:action="@{/needs/{id}/edit(id=${need.id})}" method="post">
+
+                <div class="row">
+                  <div class="col-md-8">
+                    <div class="mb-3">
+                      <label for="title" class="form-label">
+                        <span th:text="#{needs.title.field}">Título</span> *
+                      </label>
+                      <input type="text" class="form-control" id="title" name="title"
+                             th:value="${need.title}" required>
+                    </div>
+                  </div>
+                  <div class="col-md-4">
+                    <div class="mb-3">
+                      <label for="priority" class="form-label">
+                        <span th:text="#{needs.priority}">Prioridade</span> *
+                      </label>
+                      <select class="form-select" id="priority" name="priority" required>
+                        <option value="" th:text="#{needs.select.priority}">Selecionar Prioridade</option>
+                        <option value="LOW" th:selected="${need.priority?.name() == 'LOW'}"
+                                th:text="#{priority.low}">Baixa</option>
+                        <option value="MEDIUM" th:selected="${need.priority?.name() == 'MEDIUM'}"
+                                th:text="#{priority.medium}">Média</option>
+                        <option value="HIGH" th:selected="${need.priority?.name() == 'HIGH'}"
+                                th:text="#{priority.high}">Alta</option>
+                        <option value="CRITICAL" th:selected="${need.priority?.name() == 'CRITICAL'}"
+                                th:text="#{priority.critical}">Crítica</option>
+                      </select>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="description" class="form-label" th:text="#{needs.description}">Descrição</label>
+                  <textarea class="form-control" id="description" name="description" rows="3"
+                            th:text="${need.description}"></textarea>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="category" class="form-label">
+                        <span th:text="#{needs.category}">Categoria</span> *
+                      </label>
+                      <select class="form-select" id="category" name="category" required>
+                        <option value="" th:text="#{needs.select.category}">Selecionar Categoria</option>
+                        <option value="FOOD" th:selected="${need.category?.name() == 'FOOD'}"
+                                th:text="#{category.food}">Alimentação</option>
+                        <option value="WATER" th:selected="${need.category?.name() == 'WATER'}"
+                                th:text="#{category.water}">Água</option>
+                        <option value="CLOTHING" th:selected="${need.category?.name() == 'CLOTHING'}"
+                                th:text="#{category.clothing}">Vestuário</option>
+                        <option value="MEDICAL" th:selected="${need.category?.name() == 'MEDICAL'}"
+                                th:text="#{category.medical}">Médico</option>
+                        <option value="SHELTER" th:selected="${need.category?.name() == 'SHELTER'}"
+                                th:text="#{category.shelter}">Abrigo</option>
+                        <option value="EDUCATION" th:selected="${need.category?.name() == 'EDUCATION'}"
+                                th:text="#{category.education}">Educação</option>
+                        <option value="TRANSPORTATION" th:selected="${need.category?.name() == 'TRANSPORTATION'}"
+                                th:text="#{category.transportation}">Transporte</option>
+                        <option value="OTHER" th:selected="${need.category?.name() == 'OTHER'}"
+                                th:text="#{category.other}">Outros</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="location" class="form-label">
+                        <span th:text="#{needs.location}">Localização</span> *
+                      </label>
+                      <input type="text" class="form-control" id="location" name="location"
+                             th:value="${need.location}" required>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="row">
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="quantity" class="form-label">
+                        <span th:text="#{needs.quantity}">Quantidade</span> *
+                      </label>
+                      <input type="number" class="form-control" id="quantity" name="quantity"
+                             th:value="${need.quantity}" min="1" required>
+                    </div>
+                  </div>
+                  <div class="col-md-6">
+                    <div class="mb-3">
+                      <label for="unit" class="form-label" th:text="#{needs.unit}">Unidade</label>
+                      <input type="text" class="form-control" id="unit" name="unit"
+                             th:value="${need.unit}" placeholder="kg, peças, caixas, etc.">
+                    </div>
+                  </div>
+                </div>
+
+                <div class="mb-3">
+                  <label for="deadlineDate" class="form-label">
+                    <span th:text="#{needs.deadline}">Prazo</span> (Opcional)
+                  </label>
+                  <input type="datetime-local" class="form-control" id="deadlineDate" name="deadlineDate"
+                         th:value="${need.deadlineDate != null ? #temporals.format(need.deadlineDate, 'yyyy-MM-dd''T''HH:mm') : ''}">
+                  <small class="form-text text-muted" th:text="#{needs.deadline.question}">Quando esta necessidade é requerida?</small>
+                </div>
+
+                <div class="alert alert-info">
+                  <i class="fas fa-info-circle me-2"></i>
+                  <strong>Info:</strong> As alterações serão salvas imediatamente e poderão afetar correspondências existentes.
+                </div>
+
+                <div class="d-flex gap-2">
+                  <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-save me-2"></i>
+                    <span th:text="#{needs.save.changes}">Salvar Alterações</span>
+                  </button>
+                  <a href="/needs" class="btn btn-secondary">
+                    <i class="fas fa-times me-2"></i>
+                    <span th:text="#{action.cancel}">Cancelar</span>
+                  </a>
+                </div>
+              </form>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script>
+  document.addEventListener('DOMContentLoaded', function() {
+      // Validação do formulário
+      const form = document.querySelector('form');
+      const requiredFields = form.querySelectorAll('input[required], select[required]');
+
+      form.addEventListener('submit', function(e) {
+          let isValid = true;
+
+          requiredFields.forEach(field => {
+              if (!field.value.trim()) {
+                  field.classList.add('is-invalid');
+                  isValid = false;
+              } else {
+                  field.classList.remove('is-invalid');
+                  field.classList.add('is-valid');
+              }
+          });
+
+          if (!isValid) {
+              e.preventDefault();
+              showToast('Erro', 'Por favor, preencha todos os campos obrigatórios', 'error');
+          }
+      });
+
+      // Remover validação em tempo real
+      requiredFields.forEach(field => {
+          field.addEventListener('input', function() {
+              if (this.value.trim()) {
+                  this.classList.remove('is-invalid');
+                  this.classList.add('is-valid');
+              }
+          });
+      });
+
+      // Validação especial para quantidade
+      const quantityField = document.getElementById('quantity');
+      quantityField.addEventListener('input', function() {
+          if (this.value < 1) {
+              this.classList.add('is-invalid');
+          } else {
+              this.classList.remove('is-invalid');
+              this.classList.add('is-valid');
+          }
+      });
+  });
+</script>
+</body>
+</html>

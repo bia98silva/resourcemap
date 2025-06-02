@@ -1,0 +1,36 @@
+<div th:fragment="languageSelector" class="dropdown" xmlns:th="http://www.w3.org/1999/xhtml">
+    <button class="btn btn-outline-light btn-sm dropdown-toggle" type="button"
+            id="languageDropdown" data-bs-toggle="dropdown" aria-expanded="false">
+        <i class="fas fa-globe me-1"></i>
+        <span th:text="#{nav.language}">Idioma</span>
+    </button>
+    <ul class="dropdown-menu" aria-labelledby="languageDropdown">
+        <li>
+            <a class="dropdown-item" href="javascript:void(0)" onclick="changeLanguage('pt')">
+                <img src="https://flagcdn.com/16x12/br.png" alt="PT" class="me-2">
+                Português
+            </a>
+        </li>
+        <li>
+            <a class="dropdown-item" href="javascript:void(0)" onclick="changeLanguage('en')">
+                <img src="https://flagcdn.com/16x12/us.png" alt="EN" class="me-2">
+                English
+            </a>
+        </li>
+    </ul>
+</div>
+
+<script>
+    function changeLanguage(lang) {
+        const currentUrl = new URL(window.location);
+
+        // Remove o parâmetro lang existente se houver
+        currentUrl.searchParams.delete('lang');
+
+        // Adiciona o novo parâmetro de idioma
+        currentUrl.searchParams.set('lang', lang);
+
+        // Redireciona para a nova URL
+        window.location.href = currentUrl.toString();
+    }
+</script>

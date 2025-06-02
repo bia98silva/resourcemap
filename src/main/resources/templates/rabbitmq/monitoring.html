@@ -1,0 +1,548 @@
+<!DOCTYPE html>
+<html lang="pt" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title th:text="#{rabbitmq.title} + ' - ' + #{app.title}">RabbitMQ Monitoring - ResourceMap</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link href="/css/style.css" rel="stylesheet">
+  <meta name="_csrf" th:content="${_csrf.token}"/>
+  <meta name="_csrf_header" th:content="${_csrf.headerName}"/>
+  <style>
+    .rabbitmq-card {
+        background: linear-gradient(135deg, #ff6600 0%, #ff4500 100%);
+        color: white;
+        border-radius: 15px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        box-shadow: 0 4px 15px rgba(255,102,0,0.3);
+    }
+
+    .message-item {
+        border-left: 4px solid #28a745;
+        padding: 1rem;
+        margin-bottom: 0.5rem;
+        background: #f8f9fa;
+        border-radius: 0 8px 8px 0;
+        transition: all 0.3s ease;
+    }
+
+    .message-item.sent {
+        border-left-color: #007bff;
+        background: #e3f2fd;
+    }
+
+    .message-item.received {
+        border-left-color: #28a745;
+        background: #e8f5e8;
+    }
+
+    .message-item.error {
+        border-left-color: #dc3545;
+        background: #fee;
+    }
+
+    .stats-box {
+        background: white;
+        border-radius: 10px;
+        padding: 1.5rem;
+        text-align: center;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        height: 100%;
+    }
+
+    .stats-number {
+        font-size: 2rem;
+        font-weight: bold;
+        color: #ff6600;
+    }
+
+    .live-indicator {
+        width: 12px;
+        height: 12px;
+        background: #28a745;
+        border-radius: 50%;
+        display: inline-block;
+        animation: pulse 2s infinite;
+    }
+
+    @keyframes pulse {
+        0% { opacity: 1; }
+        50% { opacity: 0.5; }
+        100% { opacity: 1; }
+    }
+
+    .message-history {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+
+    .producer-controls {
+        background: #f8f9fa;
+        border-radius: 10px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+    }
+  </style>
+</head>
+<body>
+<div th:replace="~{layout/main :: layout(~{::main})}">
+  <main>
+    <div class="container-fluid">
+      <div class="row">
+        <div class="col-12">
+          <div class="page-header d-flex justify-content-between align-items-center">
+            <div>
+              <h1 class="page-title">
+                <i class="fas fa-exchange-alt me-2"></i>
+                <span th:text="#{rabbitmq.title}">RabbitMQ Monitoring</span>
+              </h1>
+              <p class="page-subtitle">
+                <span class="live-indicator me-2"></span>
+                <span th:text="#{rabbitmq.subtitle}">Sistema de Mensageria em Tempo Real - Produtor & Consumidor</span>
+              </p>
+            </div>
+            <div>
+              <a href="http://localhost:15672" target="_blank" class="btn btn-outline-warning">
+                <i class="fas fa-external-link-alt me-2"></i>
+                <span th:text="#{rabbitmq.console}">RabbitMQ Console</span>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- RabbitMQ Info Cards -->
+      <div class="row g-4 mb-4">
+        <div class="col-lg-4 col-md-6">
+          <div class="rabbitmq-card text-center">
+            <i class="fas fa-paper-plane fa-2x mb-2"></i>
+            <h5 th:text="#{rabbitmq.producer.title}">Produtor (Publisher)</h5>
+            <p class="mb-0" th:text="#{rabbitmq.producer.description}">Envia mensagens para filas RabbitMQ quando matches são encontrados</p>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <div class="rabbitmq-card text-center">
+            <i class="fas fa-inbox fa-2x mb-2"></i>
+            <h5 th:text="#{rabbitmq.consumer.title}">Consumidor (Subscriber)</h5>
+            <p class="mb-0" th:text="#{rabbitmq.consumer.description}">Processa mensagens das filas e executa notificações</p>
+          </div>
+        </div>
+        <div class="col-lg-4 col-md-6">
+          <div class="rabbitmq-card text-center">
+            <i class="fas fa-route fa-2x mb-2"></i>
+            <h5 th:text="#{rabbitmq.exchange.title}">Exchange & Filas</h5>
+            <p class="mb-0" th:text="#{rabbitmq.exchange.description}">Roteamento inteligente de mensagens baseado em tipos</p>
+          </div>
+        </div>
+      </div>
+
+      <!-- Statistics Cards -->
+      <div class="row g-4 mb-4">
+        <div class="col-lg-3 col-md-6">
+          <div class="stats-box">
+            <div class="stats-number" id="messagesSent" th:text="${statistics?.messagesSent ?: 0}">0</div>
+            <div class="text-muted" th:text="#{rabbitmq.stats.sent}">Mensagens Enviadas</div>
+            <small class="text-primary">
+              <i class="fas fa-arrow-up me-1"></i>
+              <span th:text="#{rabbitmq.stats.producer}">Produtor</span>
+            </small>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="stats-box">
+            <div class="stats-number" id="messagesReceived" th:text="${statistics?.messagesReceived ?: 0}">0</div>
+            <div class="text-muted" th:text="#{rabbitmq.stats.received}">Mensagens Recebidas</div>
+            <small class="text-success">
+              <i class="fas fa-arrow-down me-1"></i>
+              <span th:text="#{rabbitmq.stats.consumer}">Consumidor</span>
+            </small>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="stats-box">
+            <div class="stats-number" id="totalMessages" th:text="${statistics?.totalMessages ?: 0}">0</div>
+            <div class="text-muted" th:text="#{rabbitmq.stats.total}">Total Processadas</div>
+            <small class="text-info">
+              <i class="fas fa-chart-line me-1"></i>
+              <span th:text="#{rabbitmq.stats.system}">Sistema</span>
+            </small>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-6">
+          <div class="stats-box">
+            <div class="stats-number" id="historySize" th:text="${statistics?.historySize ?: 0}">0</div>
+            <div class="text-muted" th:text="#{rabbitmq.stats.history}">Histórico</div>
+            <small class="text-warning">
+              <i class="fas fa-history me-1"></i>
+              <span th:text="#{rabbitmq.stats.records}">Registros</span>
+            </small>
+          </div>
+        </div>
+      </div>
+
+      <div class="row g-4">
+        <!-- Producer Controls -->
+        <div class="col-lg-6">
+          <div class="card border-0">
+            <div class="card-header bg-transparent">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-play text-primary me-2"></i>
+                <span th:text="#{rabbitmq.controls.title}">Controles do Produtor</span>
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="producer-controls">
+                <form id="messageForm">
+                  <div class="mb-3">
+                    <label for="messageInput" class="form-label" th:text="#{rabbitmq.controls.message.label}">Mensagem de Teste</label>
+                    <input type="text" class="form-control" id="messageInput"
+                           th:placeholder="#{rabbitmq.controls.message.placeholder}"
+                           value="Teste RabbitMQ funcionando!">
+                  </div>
+                  <div class="d-grid gap-2 d-md-flex">
+                    <button type="submit" class="btn btn-primary" id="sendMessageBtn">
+                      <i class="fas fa-paper-plane me-2"></i>
+                      <span th:text="#{rabbitmq.controls.send}">Enviar Mensagem</span>
+                    </button>
+                    <button type="button" class="btn btn-success" id="triggerMatchBtn">
+                      <i class="fas fa-handshake me-2"></i>
+                      <span th:text="#{rabbitmq.controls.simulate}">Simular Match</span>
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <div class="alert alert-info">
+                <i class="fas fa-info-circle me-2"></i>
+                <strong th:text="#{rabbitmq.controls.how.works}">Como funciona:</strong>
+                <span th:text="#{rabbitmq.controls.description}">O Produtor envia mensagens para o RabbitMQ Exchange, que roteia para as filas apropriadas onde o Consumidor as processa.</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Message History -->
+        <div class="col-lg-6">
+          <div class="card border-0">
+            <div class="card-header bg-transparent d-flex justify-content-between align-items-center">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-history text-info me-2"></i>
+                <span th:text="#{rabbitmq.history.title}">Histórico de Mensagens</span>
+              </h5>
+              <div>
+                <button class="btn btn-sm btn-outline-secondary me-2" id="refreshBtn" th:title="#{rabbitmq.history.refresh}">
+                  <i class="fas fa-sync-alt"></i>
+                </button>
+                <button class="btn btn-sm btn-outline-danger" id="clearHistoryBtn" th:title="#{rabbitmq.history.clear}">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="message-history" id="messageHistory">
+                <div th:each="message : ${messageHistory}"
+                     th:class="'message-item ' + ${#strings.toLowerCase(message.action)}">
+                  <div class="d-flex justify-content-between align-items-start">
+                    <div>
+                      <strong th:text="${message.type}">Type</strong>
+                      <span th:class="'badge ms-2 ' +
+                                                (${message.action == 'SENT'} ? 'bg-primary' :
+                                                 ${message.action == 'RECEIVED'} ? 'bg-success' : 'bg-danger')"
+                            th:text="${message.action}">Action</span>
+                    </div>
+                    <small class="text-muted" th:text="${message.timestamp}">Time</small>
+                  </div>
+                  <p class="mb-0 mt-1" th:text="${message.content}">Content</p>
+                </div>
+              </div>
+
+              <div th:if="${#lists.isEmpty(messageHistory)}" class="text-center text-muted py-4" id="emptyState">
+                <i class="fas fa-inbox fa-3x mb-3 opacity-50"></i>
+                <p>
+                  <span th:text="#{rabbitmq.history.empty}">Nenhuma mensagem ainda.</span><br>
+                  <span th:text="#{rabbitmq.history.empty.description}">Use os controles acima para testar o sistema!</span>
+                </p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Technical Info -->
+      <div class="row mt-4">
+        <div class="col-12">
+          <div class="card border-0">
+            <div class="card-header bg-transparent">
+              <h5 class="card-title mb-0">
+                <i class="fas fa-cogs text-secondary me-2"></i>
+                <span th:text="#{rabbitmq.tech.title}">Informações Técnicas</span>
+              </h5>
+            </div>
+            <div class="card-body">
+              <div class="row">
+                <div class="col-md-6">
+                  <h6><i class="fas fa-server me-2"></i><span th:text="#{rabbitmq.tech.config}">Configuração RabbitMQ</span></h6>
+                  <ul class="list-unstyled">
+                    <li><strong th:text="#{rabbitmq.tech.exchange}">Exchange:</strong> resourcemap.exchange (Topic)</li>
+                    <li><strong th:text="#{rabbitmq.tech.queues}">Filas:</strong> notification.queue, matching.queue</li>
+                    <li><strong th:text="#{rabbitmq.tech.routing}">Routing Keys:</strong> notification.*, matching.*</li>
+                    <li><strong th:text="#{rabbitmq.tech.host}">Host:</strong> localhost:5672</li>
+                  </ul>
+                </div>
+                <div class="col-md-6">
+                  <h6><i class="fas fa-code me-2"></i><span th:text="#{rabbitmq.tech.implementation}">Implementação Spring</span></h6>
+                  <ul class="list-unstyled">
+                    <li><strong th:text="#{rabbitmq.tech.producer}">Producer:</strong> RabbitTemplate + @Service</li>
+                    <li><strong th:text="#{rabbitmq.tech.consumer}">Consumer:</strong> @RabbitListener</li>
+                    <li><strong th:text="#{rabbitmq.tech.config.class}">Config:</strong> @Configuration com Beans</li>
+                    <li><strong th:text="#{rabbitmq.tech.dependency}">Dependency:</strong> spring-boot-starter-amqp</li>
+                  </ul>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script src="/js/main.js"></script>
+
+<script th:inline="javascript">
+  document.addEventListener('DOMContentLoaded', function() {
+      console.log('🚀 Página RabbitMQ carregada!');
+
+      // Mensagens localizadas
+      const messages = {
+          typeMessage: /*[['Digite uma mensagem!']]*/ 'Digite uma mensagem!',
+          matchSent: /*[['✅ Match notification enviada!']]*/ '✅ Match notification enviada!',
+          error: /*[[#{message.error}]]*/ 'Erro!',
+          communicationError: /*[['❌ Falha na comunicação']]*/ '❌ Falha na comunicação',
+          dataUpdated: /*[['📊 Dados atualizados!']]*/ '📊 Dados atualizados!',
+          confirmClear: /*[['Tem certeza que deseja limpar o histórico?']]*/ 'Tem certeza que deseja limpar o histórico?',
+          historyCleared: /*[['🗑️ Histórico limpo!']]*/ '🗑️ Histórico limpo!',
+          clearError: /*[['❌ Falha ao limpar histórico']]*/ '❌ Falha ao limpar histórico',
+          messageSent: /*[['✅ Mensagem enviada com sucesso!']]*/ '✅ Mensagem enviada com sucesso!',
+          sendError: /*[['❌ Falha ao enviar']]*/ '❌ Falha ao enviar',
+          sending: /*[['Enviando...']]*/ 'Enviando...',
+          noMessages: /*[[#{rabbitmq.history.empty}]]*/ 'Nenhuma mensagem ainda.',
+          noMessagesDescription: /*[[#{rabbitmq.history.empty.description}]]*/ 'Use os controles acima para testar o sistema!'
+      };
+
+      // CSRF Token para requisições POST
+      const csrfToken = document.querySelector('meta[name="_csrf"]')?.getAttribute('content');
+      const csrfHeader = document.querySelector('meta[name="_csrf_header"]')?.getAttribute('content');
+
+      // Auto-refresh a cada 10 segundos
+      setInterval(refreshData, 10000);
+
+      // Form de envio de mensagem
+      document.getElementById('messageForm').addEventListener('submit', async function(e) {
+          e.preventDefault();
+
+          const messageInput = document.getElementById('messageInput');
+          const message = messageInput.value.trim();
+
+          if (!message) {
+              alert(messages.typeMessage);
+              return;
+          }
+
+          console.log('📤 Enviando mensagem:', message);
+          await sendMessage(message, 'TEST');
+      });
+
+      // Botão de match
+      document.getElementById('triggerMatchBtn').addEventListener('click', async function() {
+          console.log('🎯 Simulando match...');
+
+          const btn = this;
+          const originalText = btn.innerHTML;
+
+          btn.disabled = true;
+          btn.innerHTML = '<div class="spinner-border spinner-border-sm me-2"></div>' + messages.sending;
+
+          try {
+              const headers = {
+                  'Content-Type': 'application/json'
+              };
+
+              // Adicionar CSRF se existir
+              if (csrfToken && csrfHeader) {
+                  headers[csrfHeader] = csrfToken;
+              }
+
+              const response = await fetch('/rabbitmq/trigger-match-notification', {
+                  method: 'POST',
+                  headers: headers
+              });
+
+              console.log('📡 Resposta do servidor:', response.status);
+
+              const data = await response.json();
+              console.log('📦 Dados recebidos:', data);
+
+              if (data.status === 'success') {
+                  alert(messages.matchSent);
+                  await refreshData();
+              } else {
+                  alert(messages.error + ': ' + data.message);
+              }
+          } catch (error) {
+              console.error('❌ Erro na requisição:', error);
+              alert(messages.communicationError + ': ' + error.message);
+          } finally {
+              btn.disabled = false;
+              btn.innerHTML = originalText;
+          }
+      });
+
+      // Botão refresh
+      document.getElementById('refreshBtn').addEventListener('click', async function() {
+          console.log('🔄 Refresh manual...');
+          await refreshData();
+          alert(messages.dataUpdated);
+      });
+
+      // Botão limpar histórico
+      document.getElementById('clearHistoryBtn').addEventListener('click', async function() {
+          if (!confirm(messages.confirmClear)) return;
+
+          try {
+              const headers = {
+                  'Content-Type': 'application/json'
+              };
+
+              if (csrfToken && csrfHeader) {
+                  headers[csrfHeader] = csrfToken;
+              }
+
+              const response = await fetch('/rabbitmq/clear-history', {
+                  method: 'POST',
+                  headers: headers
+              });
+
+              const data = await response.json();
+
+              if (data.status === 'success') {
+                  alert(messages.historyCleared);
+                  await refreshData();
+              }
+          } catch (error) {
+              console.error('❌ Erro ao limpar:', error);
+              alert(messages.clearError);
+          }
+      });
+
+      async function sendMessage(message, type) {
+          try {
+              const headers = {
+                  'Content-Type': 'application/json'
+              };
+
+              // Adicionar CSRF se existir
+              if (csrfToken && csrfHeader) {
+                  headers[csrfHeader] = csrfToken;
+              }
+
+              console.log('📡 Enviando para servidor...');
+
+              const response = await fetch('/rabbitmq/send-test-message', {
+                  method: 'POST',
+                  headers: headers,
+                  body: JSON.stringify({ message, type })
+              });
+
+              console.log('📡 Status da resposta:', response.status);
+
+              const data = await response.json();
+              console.log('📦 Resposta do servidor:', data);
+
+              if (data.status === 'success') {
+                  alert(messages.messageSent);
+                  document.getElementById('messageInput').value = '';
+                  await refreshData();
+              } else {
+                  alert(messages.error + ': ' + data.message);
+              }
+          } catch (error) {
+              console.error('❌ Erro na requisição:', error);
+              alert(messages.sendError + ': ' + error.message);
+          }
+      }
+
+      async function refreshData() {
+          try {
+              console.log('🔄 Atualizando dados...');
+
+              // Atualizar estatísticas
+              const statsResponse = await fetch('/rabbitmq/statistics');
+              const stats = await statsResponse.json();
+
+              console.log('📊 Novas estatísticas:', stats);
+
+              document.getElementById('messagesSent').textContent = stats.messagesSent || 0;
+              document.getElementById('messagesReceived').textContent = stats.messagesReceived || 0;
+              document.getElementById('totalMessages').textContent = stats.totalMessages || 0;
+              document.getElementById('historySize').textContent = stats.historySize || 0;
+
+              // Atualizar histórico
+              const historyResponse = await fetch('/rabbitmq/message-history');
+              const historyData = await historyResponse.json();
+
+              console.log('📋 Novo histórico:', historyData);
+
+              updateMessageHistory(historyData.messages);
+
+          } catch (error) {
+              console.error('❌ Erro ao atualizar dados:', error);
+          }
+      }
+
+      function updateMessageHistory(messages) {
+          const historyContainer = document.getElementById('messageHistory');
+
+          if (!messages || messages.length === 0) {
+              historyContainer.innerHTML = `
+                  <div class="text-center text-muted py-4">
+                      <i class="fas fa-inbox fa-3x mb-3 opacity-50"></i>
+                      <p>${messages.noMessages}<br>${messages.noMessagesDescription}</p>
+                  </div>
+              `;
+              return;
+          }
+
+          // Ordenar por timestamp (mais recente primeiro)
+          const sortedMessages = messages.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
+
+          historyContainer.innerHTML = sortedMessages.map(message => {
+              const actionClass = message.action.toLowerCase();
+              const badgeClass = message.action === 'SENT' ? 'bg-primary' :
+                                message.action === 'RECEIVED' ? 'bg-success' : 'bg-danger';
+
+              return `
+                  <div class="message-item ${actionClass}">
+                      <div class="d-flex justify-content-between align-items-start">
+                          <div>
+                              <strong>${message.type}</strong>
+                              <span class="badge ms-2 ${badgeClass}">${message.action}</span>
+                          </div>
+                          <small class="text-muted">${message.timestamp}</small>
+                      </div>
+                      <p class="mb-0 mt-1">${message.content}</p>
+                  </div>
+              `;
+          }).join('');
+      }
+
+      // Carregar dados iniciais
+      console.log('📊 Carregando dados iniciais...');
+      refreshData();
+  });
+</script>
+</body>
+</html>
