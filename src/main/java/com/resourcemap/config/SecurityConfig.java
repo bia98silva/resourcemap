@@ -24,23 +24,17 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http, @Lazy OAuth2SuccessHandler oauth2SuccessHandler) throws Exception {
         http
                 .authorizeHttpRequests(authz -> authz
-                        // Permitir acesso público às páginas básicas
+                
                         .requestMatchers("/", "/home", "/login", "/register", "/error").permitAll()
-                        // Permitir acesso aos recursos estáticos
                         .requestMatchers("/css/**", "/js/**", "/images/**", "/favicon.ico").permitAll()
-                        // Permitir acesso às APIs públicas
                         .requestMatchers("/api/statistics").permitAll()
-                        // Proteger APIs que precisam de autenticação
                         .requestMatchers("/api/**").authenticated()
-                        // Permitir APIs da IA para usuários autenticados
                         .requestMatchers("/ai-assistant/**").authenticated()
-                        // Proteger área administrativa
                         .requestMatchers("/admin/**").hasRole("ADMIN")
-                        // Todas as outras requisições precisam de autenticação
                         .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf
-                        // Desabilitar CSRF para APIs da IA (requisições AJAX)
+                 
                         .ignoringRequestMatchers("/ai-assistant/**", "/api/**")
                 )
                 .oauth2Login(oauth2 -> oauth2
