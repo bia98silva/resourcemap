@@ -39,12 +39,12 @@ public class UserRegistrationController {
                                Model model,
                                RedirectAttributes redirectAttributes) {
 
-        // Validar se o email já existe
+     
         if (userService.findByEmail(user.getEmail()).isPresent()) {
             result.rejectValue("email", "error.user", "Este email já está cadastrado no sistema");
         }
 
-        // Se houver erros de validação, retornar para o formulário
+      
         if (result.hasErrors()) {
             model.addAttribute("userRoles", UserRole.values());
             model.addAttribute("stats", reportService.getDashboardStatistics());
@@ -52,7 +52,7 @@ public class UserRegistrationController {
         }
 
         try {
-            // Criar o usuário
+         
             userService.createUser(user);
             redirectAttributes.addFlashAttribute("successMessage",
                     "Cadastro realizado com sucesso! Você pode fazer login agora.");
