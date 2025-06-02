@@ -57,7 +57,7 @@ public class NeedService {
         return needRepository.findActiveNeedsByPriority();
     }
 
-    // UPDATE METHOD CORRIGIDO
+ 
     public Need updateNeed(Need need) {
         System.out.println("=== SERVICE UPDATE ===");
         System.out.println("ID: " + need.getId());
@@ -69,12 +69,12 @@ public class NeedService {
             throw new RuntimeException("ID da necessidade não pode ser nulo para atualização");
         }
 
-        // Verificar se existe
+      
         if (!needRepository.existsById(need.getId())) {
             throw new RuntimeException("Necessidade com ID " + need.getId() + " não encontrada");
         }
 
-        // Salvar diretamente - o JPA vai fazer o merge automaticamente
+      
         Need savedNeed = needRepository.save(need);
 
         System.out.println("Necessidade salva com sucesso: " + savedNeed.getId());
