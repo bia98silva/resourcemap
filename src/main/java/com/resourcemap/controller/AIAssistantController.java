@@ -111,7 +111,7 @@ public class AIAssistantController {
         try {
             String message = request.get("message");
 
-            // Contextualizar a conversa com dados do sistema
+   
             Map<String, Object> systemContext = reportService.getDashboardStatistics();
 
             String response = aiService.chatWithAssistant(message, systemContext);
