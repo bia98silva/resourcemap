@@ -51,11 +51,11 @@ public class CustomUserDetailsService implements UserDetailsService {
 
         UserDetails userDetails = new org.springframework.security.core.userdetails.User(
                 user.getEmail(),
-                user.getPassword(), // CRUCIAL: usar a senha criptografada como está
-                true, // enabled
-                true, // accountNonExpired
-                true, // credentialsNonExpired
-                true, // accountNonLocked
+                user.getPassword(), 
+                true, 
+                true, 
+                true, 
+                true, 
                 getAuthorities(user)
         );
 
