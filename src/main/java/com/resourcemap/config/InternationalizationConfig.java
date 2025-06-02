@@ -21,7 +21,7 @@ public class InternationalizationConfig implements WebMvcConfigurer {
         messageSource.setDefaultEncoding("UTF-8");
         messageSource.setUseCodeAsDefaultMessage(false);
         messageSource.setFallbackToSystemLocale(false);
-        messageSource.setCacheSeconds(0); // Desabilita cache para debug
+        messageSource.setCacheSeconds(0); 
         return messageSource;
     }
 
