@@ -317,10 +317,10 @@ docker run -p 8080:8080 resourcemap:latest
 - Beatriz Silva RM552600
 - Vitor Onofre Ramos RM553241
 - Pedro Henrique soares araujo - RM553801
-
+## 
 - **AI Integration**: Powered by Ollama & Llama 3.2
 - **Infrastructure**: Docker & RabbitMQ
-
+## 
 - Link do Pitch: https://www.youtube.com/watch?v=Wzal2XSpM6s 
 - Link da aplicação rodando: https://youtu.be/O8ddFnr0Mxk
 
